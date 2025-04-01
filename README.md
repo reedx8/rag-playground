@@ -11,6 +11,14 @@ npm install
 npm run dev
 ```
 
+## Tech Stack
+
+1. Chat model -- OpenAi
+2. Vector store -- Convex DB
+3. Embedding model -- OpenAi
+4. RAG library -- LangChain
+5. Others -- TypeScript, Next.js, React
+
 ## Tutorials
 
 1. https://js.langchain.com/docs/integrations/vectorstores/convex/
