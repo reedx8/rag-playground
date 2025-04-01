@@ -13,10 +13,10 @@ npm run dev
 
 ## Tech Stack
 
-1. Chat model -- OpenAi
+1. Chat model -- OpenAI
 2. Vector store -- Convex DB
-3. Embedding model -- OpenAi
-4. RAG library -- LangChain
+3. Embedding model -- OpenAI
+4. RAG library -- LangChain + LangSmith
 5. Others -- TypeScript, Next.js, React
 
 ## Tutorials
