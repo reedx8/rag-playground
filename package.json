@@ -6,7 +6,6 @@
     "dev": "npm-run-all --parallel dev:frontend dev:backend",
     "dev:frontend": "next dev",
     "dev:backend": "convex dev",
-    "predev": "convex dev --until-success && convex dashboard",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -16,6 +15,7 @@
     "@langchain/core": "^0.3.43",
     "@langchain/langgraph": "^0.2.60",
     "@langchain/openai": "^0.5.1",
+    "cheerio": "^1.0.0",
     "convex": "^1.21.0",
     "langchain": "^0.3.19",
     "next": "15.2.3",
