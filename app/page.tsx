@@ -1,74 +1,62 @@
 "use client";
-import "cheerio";
-import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
-import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
-import { ConvexVectorStore } from "@langchain/community/vectorstores/convex";
-import { OpenAIEmbeddings } from "@langchain/openai";
-
-import { Document } from "@langchain/core/documents";
-import { ChatPromptTemplate } from "@langchain/core/prompts";
-import { pull } from "langchain/hub";
-import { Annotation, StateGraph } from "@langchain/langgraph";
-
-import { useMutation, useQuery } from "convex/react";
-import ConvexClientProvider from "@/components/ConvexClientProvider";
-import Link from "next/link";
-import { useCallback, useEffect } from "react";
-import { load } from "langchain/load";
+import { useCallback, useEffect, useState } from "react";
+// import { ConvexVectorStore } from "@langchain/community/vectorstores/convex";
+// import { useMutation, useQuery } from "convex/react";
+// import ConvexClientProvider from "@/components/ConvexClientProvider";
+// import Link from "next/link";
+// import { load } from "langchain/load";
 
 export default function Home() {
+  const [response, setResponse] = useState<string | undefined>();
   const performIngestion = useAction(api.myActions.ingest);
-  const url = "https://lilianweng.github.io/posts/2023-06-23-agent/"
-  // const url =
-    // "https://www.espn.com/nba/story/_/id/44480928/no-one-was-same-page-memphis-grizzlies-shocking-firing-taylor-jenkins";
+  const performSearch = useAction(api.myActions.search);
 
-  async function loadAndChunk(url: string){
-    // Load and chunk contents -- uses cheerio to load HTML from web URLs and
-    //parse it to text. We can pass custom selectors to the constructor to only
-    // parse specific elements
-    const pTagSelector = "p";
-    const cheerioLoader = new CheerioWebBaseLoader(url, {
-      selector: pTagSelector,
-    });
+  const handleSearch = async () => {
+    // const query = "What did the espn article say about taylor jenkins?";
+    // const query = "what does the article say about how to optimize the retrieval speed?"
+    const query = "what did Trump announce on friday?";
+    const result = await performSearch({ query });
+    // console.log(result);
+    setResponse(result);
+  };
 
-    const docs = await cheerioLoader.load();
-    console.assert(docs.length === 1, "Expected 1 document");
-    console.log(`Total characters: ${docs[0].pageContent.length}`);
-
-    const splitter = new RecursiveCharacterTextSplitter({
-      chunkSize: 1000,
-      chunkOverlap: 200,
-    });
-    const allSplits = await splitter.splitDocuments(docs);
-
-    return allSplits;
-  }
-
-  const handleIngestion = useCallback((docs: any) => {
-    performIngestion({ docs }).catch((error) => {
-      console.error("ERROR DURING INGESTION: " + error);
-      // console.log("hello'")
-    });
-  }, [performIngestion]);
+  const handleIngestion = useCallback(
+    (url: string) => {
+      performIngestion({ url }).catch((error) => {
+        console.error("ERROR DURING INGESTION: " + error);
+        // console.log("hello'")
+      });
+    },
+    [performIngestion],
+  );
 
   useEffect(() => {
-
+    // ingest url contents
     const fetchAndIngest = async () => {
       try {
-        const docs = await loadAndChunk(url);
-        handleIngestion(docs);
+        // const url = "https://tkdodo.eu/blog/refactor-impactfully";
+        // const url = "https://lilianweng.github.io/posts/2023-06-23-agent/"
+        const url =
+          "https://www.espn.com/nba/story/_/id/44480928/no-one-was-same-page-memphis-grizzlies-shocking-firing-taylor-jenkins";
+
+        handleIngestion(url);
       } catch (error) {
-        console.error("ERROR LOADING/CHUNKING: " + error)
+        console.error("ERROR LOADING/CHUNKING: " + error);
       }
     };
 
-    fetchAndIngest();
+    // fetchAndIngest();
+  }, [handleIngestion]);
 
-    // const docs = await loadAndChunk(url);
-    // handleIngestion(docs);
-  }, [handleIngestion, url]);
-
-  return <div>Hello</div>;
+  return (
+    <div>
+      {response === undefined ? "Response here" : response}
+      <div className="flex gap-4 mt-4">
+        <button onClick={handleSearch}>Search</button>
+        <button onClick={() => setResponse(undefined)}>Clear</button>
+      </div>
+    </div>
+  );
 }
