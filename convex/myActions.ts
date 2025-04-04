@@ -97,7 +97,8 @@ export const search = action({
       return { answer: response.content };
     };
 
-    // Compile application and test
+    // Compile application and test. "inputs" gets passed to the first node's state in the graph,
+    // and its output is passed to the next node's state i believe
     const graph = new StateGraph(StateAnnotation)
       .addNode("retrieve", retrieve)
       .addNode("generate", generate)
