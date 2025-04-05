@@ -15,7 +15,7 @@ export default function Home() {
   const performSearch = useAction(api.myActions.search);
 
   const handleSearch = async (formData: FormData) => {
-    const query = formData.get("query");
+    const query = String(formData.get("query"));
     // alert(query);
     const result = await performSearch({ query });
     setResponse(result);
