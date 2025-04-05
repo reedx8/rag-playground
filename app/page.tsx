@@ -11,14 +11,17 @@ import { useCallback, useEffect, useState } from "react";
 
 export default function Home() {
   const [response, setResponse] = useState<string | undefined>();
+  const [isLoading, setIsLoading] = useState(false);
   const performIngestion = useAction(api.myActions.ingest);
   const performSearch = useAction(api.myActions.search);
 
   const handleSearch = async (formData: FormData) => {
+    setIsLoading(true);
     const query = String(formData.get("query"));
     // alert(query);
     const result = await performSearch({ query });
     setResponse(result);
+    setIsLoading(false);
   };
 
   const handleIngestion = useCallback(
@@ -51,12 +54,16 @@ export default function Home() {
 
   return (
     <div className="p-2 w-full h-full">
+      <h1 className='text-2xl mb-2'>Search your article archive</h1>
       <form action={handleSearch}>
         {/*  Questions:
           - what does this article say about declarative memory?
           - what did the espn article say about taylor jenkins?
           - what does the article say about how to optimize the retrieval speed?
           - what did Trump announce on friday?
+          - did article say who is leading the tiktok dealmaking effort?
+          - did article say how many american users tikok has?
+          - how long did tiktok go offline in the us?
         */}
         <input
           type="text"
@@ -71,7 +78,8 @@ export default function Home() {
           Search
         </button>
       </form>
-      {response === undefined ? "AI response here" : response}
+      {isLoading ? "Loading...": ""}
+      {!response ? "" : response}
       <div className='mt-2'>
         <button
           className="border-1 p-1 hover:cursor-pointer rounded-sm"
