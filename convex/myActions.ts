@@ -23,7 +23,7 @@ const llm = new ChatOpenAI({
 
 // The embedding model to use for the Convex vector store.
 const embeddingModel = new OpenAIEmbeddings({
-  model: "text-embedding-3-small", // "...-large" causes vector size mismatch for some reason
+  model: "text-embedding-3-small", // NOTE: "...-large" causes vector size mismatch for some reason
   apiKey: process.env.OPENAI_API_KEY,
 });
 
@@ -43,31 +43,20 @@ const StateAnnotation = Annotation.Root({
 
 export const ingest = action({
   args: {
-    // url: v.string(),
+    url: v.string(),
   },
   handler: async (ctx, args) => {
-    // if (args.url.length === 0 || args.url === undefined) {
-    // return;
-    // }
+    if (args.url.length === 0 || args.url === undefined) {
+      return;
+    }
     // TODO: include check if url already in vector store
 
-    // parse url into documents:
-    // const url = "https://lilianweng.github.io/posts/2023-06-23-agent/";
-    const url =
-      "https://www.cnn.com/2025/04/04/tech/tiktok-deal-ban-extended-trump/index.html";
-    const docs = await loadAndChunk(url);
-    // const docs = await loadAndChunk(args.url);
+    // parse url into chunks of documents:
+    const docs = await loadAndChunk(args.url);
     console.log(docs);
 
     // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
     await ConvexVectorStore.fromDocuments(docs, embeddingModel, { ctx });
-
-    // await ConvexVectorStore.fromTexts(
-    //   ["Hello world", "Bye bye", "What's this?"],
-    //   [{ prop: 2 }, { prop: 1 }, { prop: 3 }],
-    //   embeddingModel,
-    //   { ctx },
-    // );
   },
 });
 
@@ -76,8 +65,6 @@ export const search = action({
     query: v.string(),
   },
   handler: async (ctx, args) => {
-    // const vectorStore = new ConvexVectorStore(embeddingModel, { ctx });
-
     // Define application steps
     const retrieve = async (state: typeof InputStateAnnotation.State) => {
       const vectorStore = new ConvexVectorStore(embeddingModel, { ctx });
@@ -107,15 +94,9 @@ export const search = action({
       .addEdge("generate", "__end__")
       .compile();
 
-    // const inputs = {
-    //   question: "what does this article say about declarative memory?",
-    // };
     const inputs = { question: args.query };
     const result = await graph.invoke(inputs);
     return result["answer"];
-
-    // const resultOne = await vectorStore.similaritySearch(args.query, 1);
-    // console.log(resultOne);
   },
 });
 

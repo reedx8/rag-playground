@@ -2,6 +2,7 @@
 import { useAction } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useCallback, useEffect, useState } from "react";
+// import { ErrorBoundary } from "react-error-boundary";
 // import { ConvexVectorStore } from "@langchain/community/vectorstores/convex";
 // import { useMutation, useQuery } from "convex/react";
 // import ConvexClientProvider from "@/components/ConvexClientProvider";
@@ -13,12 +14,10 @@ export default function Home() {
   const performIngestion = useAction(api.myActions.ingest);
   const performSearch = useAction(api.myActions.search);
 
-  const handleSearch = async () => {
-    // const query = "What did the espn article say about taylor jenkins?";
-    // const query = "what does the article say about how to optimize the retrieval speed?"
-    const query = "what did Trump announce on friday?";
+  const handleSearch = async (formData: FormData) => {
+    const query = formData.get("query");
+    // alert(query);
     const result = await performSearch({ query });
-    // console.log(result);
     setResponse(result);
   };
 
@@ -51,11 +50,35 @@ export default function Home() {
   }, [handleIngestion]);
 
   return (
-    <div>
-      {response === undefined ? "Response here" : response}
-      <div className="flex gap-4 mt-4">
-        <button onClick={handleSearch}>Search</button>
-        <button onClick={() => setResponse(undefined)}>Clear</button>
+    <div className="p-2 w-full h-full">
+      <form action={handleSearch}>
+        {/*  Questions:
+          - what does this article say about declarative memory?
+          - what did the espn article say about taylor jenkins?
+          - what does the article say about how to optimize the retrieval speed?
+          - what did Trump announce on friday?
+        */}
+        <input
+          type="text"
+          name="query"
+          className="bg-white text-black mb-2 p-1 mr-1 rounded-sm"
+          size={50}
+        />
+        <button
+          type="submit"
+          className="border-1 p-1 hover:cursor-pointer rounded-sm"
+        >
+          Search
+        </button>
+      </form>
+      {response === undefined ? "AI response here" : response}
+      <div className='mt-2'>
+        <button
+          className="border-1 p-1 hover:cursor-pointer rounded-sm"
+          onClick={() => setResponse(undefined)}
+        >
+          Clear
+        </button>
       </div>
     </div>
   );
