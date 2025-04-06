@@ -12,6 +12,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { pull } from "langchain/hub";
 import { Annotation, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
+import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 
 // Define OpenAI LLM to use
 // const LLM_API_KEY = process.env.OPENAI_API_KEY;
@@ -97,6 +98,23 @@ export const search = action({
     const inputs = { question: args.query };
     const result = await graph.invoke(inputs);
     return result["answer"];
+  },
+});
+
+export const fileUpload = action({
+  args: {
+    file: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const loader = new PDFLoader(args.file);
+    const docs = await loader.load();
+    console.log(docs);
+
+    // const docs = await loadAndChunk(args.file);
+    // console.log(docs);
+
+    // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
+    await ConvexVectorStore.fromDocuments(docs, embeddingModel, { ctx });
   },
 });
 
