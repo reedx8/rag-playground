@@ -118,6 +118,7 @@ export const fileUpload = action({
   },
 });
 
+// TODO: outsource this to a server-side function instead of here in convex code
 // Load and chunk contents -- load HTML from web URLs and
 // parse it to text. We can pass custom selectors to the constructor to only
 // parse specific elements. Function defined server-side avoids any CORS policy from URL.
