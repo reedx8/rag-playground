@@ -7,7 +7,7 @@
     - did article say how many american users tikok has?
     - how long did tiktok go offline in the us?
 */
-import SearchContainer from "../components/SearchContainer";
+import SearchContainer from "@/app/components/SearchContainer";
 
 export default function Home() {
   return (

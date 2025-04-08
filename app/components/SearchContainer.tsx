@@ -1,10 +1,10 @@
 "use client";
 import { useAction } from "convex/react";
 import { useState } from "react";
-import { api } from "../convex/_generated/api";
+import { api } from "@/convex/_generated/api";
 import { useFormStatus } from "react-dom";
 import IngestForms from "./IngestForms";
-import { processPdfFile } from "../app/actions/fileProcessing";
+import { processPdfFile } from "@/app/actions/fileProcessing";
 
 export default function SearchContainer() {
   const [response, setResponse] = useState<string | undefined>();
