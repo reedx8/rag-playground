@@ -7,6 +7,7 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
+// load file into the Document format that we use downstream to chunk
 export async function processFile(formData: FormData) {
   const file = formData.get("file") as File | null;
 
