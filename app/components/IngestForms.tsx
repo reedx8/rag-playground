@@ -2,13 +2,12 @@
 import { useFormStatus } from "react-dom";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { processFile } from "@/app/actions/fileProcessing";
+// import { Document } from 'langchain/document';
 
-export default function IngestForms({
-  processFile,
-}: {
-  processFile: (formData: FormData) => Promise<void>;
-}) {
+export default function IngestForms() {
   const performIngestion = useAction(api.myActions.ingest);
+  const performFileUpload = useAction(api.myActions.fileUpload);
   // const url = "https://tkdodo.eu/blog/refactor-impactfully";
   // const url = "https://lilianweng.github.io/posts/2023-06-23-agent/";
   // const url =
@@ -24,7 +23,7 @@ export default function IngestForms({
     }
 
     try {
-      // await performIngestion({ url });
+      await performIngestion({ url });
       alert("URL processed successfully!");
     } catch (error) {
       alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -33,7 +32,10 @@ export default function IngestForms({
 
   async function handleFileUpload(formData: FormData) {
     try {
-      await processFile(formData);
+      const serializableSplits = await processFile(formData); // Server Action since Convex Actions cannot take File types
+
+      // Convex actions cannot take complex objects, so pass serialized docs
+      performFileUpload({ docs: serializableSplits });
       alert("File processed successfully!");
     } catch (error) {
       alert(`Error: ${error instanceof Error ? error.message : String(error)}`);

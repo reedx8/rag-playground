@@ -1,11 +1,13 @@
 "use server";
 
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+import { CSVLoader } from "@langchain/community/document_loaders/fs/csv";
 import { writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
+import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-export async function processPdfFile(formData: FormData) {
+export async function processFile(formData: FormData) {
   const file = formData.get("file") as File | null;
 
   if (
@@ -17,23 +19,47 @@ export async function processPdfFile(formData: FormData) {
   }
 
   try {
-    // Save the file temporarily on the server
+    // Save the file temporarily on the Next.js server
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create a temporary file path
+    // Create a temporary file path on the Next.js server
     const tempFilePath = join(tmpdir(), file.name);
     await writeFile(tempFilePath, buffer);
 
-    // Now you can use PDFLoader with the file path
-    const loader = new PDFLoader(tempFilePath);
-    const docs = await loader.load();
+    // Now you can use PDFLoader/CSVLoader with the file path
+    let docs;
+    if (file.type.endsWith("pdf")) {
+      const loader = new PDFLoader(tempFilePath);
+      docs = await loader.load();
+    } else if (file.type.endsWith("csv")) {
+      const loader = new CSVLoader(tempFilePath);
+      docs = await loader.load();
+    } else {
+      throw new Error("Invalid file type");
+    }
 
     // alert("Processed documents: " + docs);
     console.log("Processed documents:", docs);
 
-    // Here you would do whatever you need with the docs
-    // For example, store them in your database using your Convex action
+    // Chunk docs
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 1000,
+      chunkOverlap: 200,
+    });
+    const allSplits = await splitter.splitDocuments(docs);
+
+    // return allSplits;
+
+    // Convert chunks to a serializable format:
+    // Convert the Document object to plain JavaScript objects with just the data you need (typically pageContent and metadata).
+    // Creates a serializable representation that can safely pass from server to client.
+    const serializableSplits = allSplits.map((doc) => ({
+      pageContent: doc.pageContent,
+      metadata: doc.metadata,
+    }));
+
+    return serializableSplits;
 
     // return docs;
   } catch (error) {

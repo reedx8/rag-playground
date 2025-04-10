@@ -12,7 +12,7 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { pull } from "langchain/hub";
 import { Annotation, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
+// import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 
 // Define OpenAI LLM to use
 // const LLM_API_KEY = process.env.OPENAI_API_KEY;
@@ -103,12 +103,21 @@ export const search = action({
 
 export const fileUpload = action({
   args: {
-    file: v.any(),
+    docs: v.any(),
+    // file2: v.record(v.union(v.string(), v.any()), v.any()),
   },
   handler: async (ctx, args) => {
-    const loader = new PDFLoader(args.file);
-    const docs = await loader.load();
-    console.log(docs);
+    // convert serialized docs back to Document objects
+    const docs = args.docs.map(
+      (split: { pageContent: any; metadata: any }) =>
+        new Document({
+          pageContent: split.pageContent,
+          metadata: split.metadata,
+        }),
+    );
+    // const loader = new PDFLoader(args.file);
+    // const docs = await loader.load();
+    // console.log(docs);
 
     // const docs = await loadAndChunk(args.file);
     // console.log(docs);
@@ -117,6 +126,32 @@ export const fileUpload = action({
     await ConvexVectorStore.fromDocuments(docs, embeddingModel, { ctx });
   },
 });
+
+// async function parseIntoDocs(fileType: string, url?: string, pdfFile?: File) {
+//   if (fileType === "url" && url) {
+//     const pTagSelector = "p";
+//     const cheerioLoader = new CheerioWebBaseLoader(url, {
+//       selector: pTagSelector,
+//     });
+//     return await cheerioLoader.load();
+//   } else if (fileType === "pdf" && pdfFile) {
+//     const loader = new PDFLoader(pdfFile);
+//     return await loader.load();
+//   } else {
+//     throw new Error("Invalid file type or file");
+//   }
+// }
+
+// async function parseAndChunk(source: any) {
+//   const docs = await parseIntoDocs(source);
+//   console.log(docs);
+//   const splitter = new RecursiveCharacterTextSplitter({
+//     chunkSize: 1000,
+//     chunkOverlap: 200,
+//   });
+//   const allSplits = await splitter.splitDocuments(docs);
+//   return allSplits;
+// }
 
 // TODO: outsource this to a server-side function instead of here in convex code
 // Load and chunk contents -- load HTML from web URLs and
