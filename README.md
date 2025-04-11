@@ -11,7 +11,7 @@ npm install
 npm run dev
 ```
 
-This app uses OpenAI to generate embeddings and LangSmith to monitor app's state. Add OPENAI_API_KEY and LANGSMITH_API_KEY Convex environment variables on your Convex dashboard.
+This app uses OpenAI to generate embeddings and LangSmith to monitor app's state. Add `OPENAI_API_KEY` and `LANGSMITH_API_KEY` Convex environment variables on your Convex dashboard.
 
 ## Features
 
