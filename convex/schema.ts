@@ -13,6 +13,6 @@ export default defineSchema({
     metadata: v.any(),
   }).vectorIndex("byEmbedding", {
     vectorField: "embedding",
-    dimensions: 1536,
+    dimensions: 1536, // this must mach with the embedding model used (see your OpenAIEmbeddings object)
   }),
 });

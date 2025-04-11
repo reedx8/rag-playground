@@ -12,10 +12,8 @@ import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { pull } from "langchain/hub";
 import { Annotation, StateGraph } from "@langchain/langgraph";
 import { ChatOpenAI } from "@langchain/openai";
-// import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 
 // Define OpenAI LLM to use
-// const LLM_API_KEY = process.env.OPENAI_API_KEY;
 const llm = new ChatOpenAI({
   model: "gpt-4o-mini",
   temperature: 0,
@@ -24,11 +22,11 @@ const llm = new ChatOpenAI({
 
 // The embedding model to use for the Convex vector store.
 const embeddingModel = new OpenAIEmbeddings({
-  model: "text-embedding-3-small", // NOTE: "...-large" causes vector size mismatch for some reason
+  model: "text-embedding-3-small", // NOTE: "...-small" matches vector size defined in our schema.ts
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Define prompt for question-answering
+// Define prompt engineering template (see https://smith.langchain.com/hub/rlm/rag-prompt?organizationId=e2b7db87-830b-4374-b1e9-e923b4d3772a)
 const promptTemplate = await pull<ChatPromptTemplate>("rlm/rag-prompt");
 
 // Define state for application (To use LangGraph)
@@ -42,6 +40,7 @@ const StateAnnotation = Annotation.Root({
   answer: Annotation<string>,
 });
 
+// Transform source into Document format, chunk, then add to Convex Vector Store
 export const ingest = action({
   args: {
     url: v.string(),
@@ -61,6 +60,7 @@ export const ingest = action({
   },
 });
 
+// Search over Vector Store to answer user's question
 export const search = action({
   args: {
     query: v.string(),
@@ -124,6 +124,36 @@ export const fileUpload = action({
 
     // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
     await ConvexVectorStore.fromDocuments(docs, embeddingModel, { ctx });
+  },
+});
+
+// get all unique files in vector store
+export const getAllFiles = action({
+  args: {},
+  handler: async (ctx) => {
+    const vectorStore = new ConvexVectorStore(embeddingModel, { ctx });
+
+    // Convex does not yet support search directly on vector store's fields (metadata), hence the following:
+    const docs = await vectorStore.similaritySearch("*", 256);
+
+    // Create a Set of unique source filenames
+    const uniqueSources = new Set();
+    const uniqueDocs = docs.filter((doc) => {
+      const source = doc.metadata.source;
+      if (uniqueSources.has(source)) {
+        return false;
+      }
+      uniqueSources.add(source);
+      return true;
+    });
+
+    // uniqueDocs.forEach((doc) => console.log(doc.metadata.source));
+    const serializedDocs = uniqueDocs.map((doc) => ({
+      // pageContent: doc.pageContent,
+      source: doc.metadata.source,
+    }));
+    return serializedDocs;
+    // return uniqueDocs;
   },
 });
 

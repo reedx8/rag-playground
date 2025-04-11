@@ -10,12 +10,14 @@
     - did article say how many american users tikok has?
 */
 import SearchContainer from "@/app/components/SearchContainer";
+import FileView from "./components/FileView";
 
 export default function Home() {
   return (
     <main className="p-4 w-full h-full">
       <div className="flex flex-col gap-1">
         <SearchContainer />
+        <FileView />
       </div>
     </main>
   );
