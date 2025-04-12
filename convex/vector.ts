@@ -1,4 +1,4 @@
-"use node";
+"use node"; // Need since Actions use unsupported NPM packages or Node.js APIs
 
 import "cheerio";
 import { ConvexVectorStore } from "@langchain/community/vectorstores/convex";
@@ -56,7 +56,10 @@ export const ingest = action({
     console.log(docs);
 
     // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
-    await ConvexVectorStore.fromDocuments(docs, embeddingModel, { ctx });
+    await ConvexVectorStore.fromDocuments(docs, embeddingModel, {
+      ctx,
+      table: "chunks",
+    });
   },
 });
 
@@ -68,7 +71,10 @@ export const search = action({
   handler: async (ctx, args) => {
     // Define application steps
     const retrieve = async (state: typeof InputStateAnnotation.State) => {
-      const vectorStore = new ConvexVectorStore(embeddingModel, { ctx });
+      const vectorStore = new ConvexVectorStore(embeddingModel, {
+        ctx,
+        table: "chunks",
+      });
       const retrievedDocs = await vectorStore.similaritySearch(state.question);
       return { context: retrievedDocs };
     };
@@ -123,7 +129,10 @@ export const fileUpload = action({
     // console.log(docs);
 
     // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
-    await ConvexVectorStore.fromDocuments(docs, embeddingModel, { ctx });
+    await ConvexVectorStore.fromDocuments(docs, embeddingModel, {
+      ctx,
+      table: "chunks",
+    });
   },
 });
 
@@ -131,7 +140,10 @@ export const fileUpload = action({
 export const getAllFiles = action({
   args: {},
   handler: async (ctx) => {
-    const vectorStore = new ConvexVectorStore(embeddingModel, { ctx });
+    const vectorStore = new ConvexVectorStore(embeddingModel, {
+      ctx,
+      table: "chunks",
+    });
 
     // Convex does not yet support search directly on vector store's fields (metadata), hence the following:
     const docs = await vectorStore.similaritySearch("*", 256);

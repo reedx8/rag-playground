@@ -13,8 +13,9 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as chunks from "../chunks.js";
 import type * as langchain_db from "../langchain/db.js";
-import type * as myActions from "../myActions.js";
+import type * as vector from "../vector.js";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -25,8 +26,9 @@ import type * as myActions from "../myActions.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  chunks: typeof chunks;
   "langchain/db": typeof langchain_db;
-  myActions: typeof myActions;
+  vector: typeof vector;
 }>;
 export declare const api: FilterApi<
   typeof fullApi,

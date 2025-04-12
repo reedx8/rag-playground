@@ -8,7 +8,7 @@ import IngestForms from "./IngestForms";
 
 export default function SearchContainer() {
   const [response, setResponse] = useState<string | undefined>();
-  const performSearch = useAction(api.myActions.search);
+  const performSearch = useAction(api.vector.search);
 
   const handleSearch = async (formData: FormData) => {
     const query = String(formData.get("query"));

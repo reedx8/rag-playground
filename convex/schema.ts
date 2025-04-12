@@ -1,18 +1,29 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
-// The schema is entirely optional.
-// You can delete this file (schema.ts) and the
-// app will continue to work.
-// The schema provides more precise TypeScript types.
+export const fileTypes = v.union(
+  v.literal("html"),
+  v.literal("pdf"),
+  v.literal("csv"),
+);
+
 export default defineSchema({
-  // For vector indexing
-  documents: defineTable({
+  // Each chunk is a LangChain Document Object in our vector store
+  chunks: defineTable({
     embedding: v.array(v.number()),
     text: v.string(),
-    metadata: v.any(),
+    metadata: v.any(), // stores reference to files table for now, among other things
   }).vectorIndex("byEmbedding", {
     vectorField: "embedding",
-    dimensions: 1536, // this must mach with the embedding model used (see your OpenAIEmbeddings object)
+    dimensions: 1536, // this must match with the embedding model used (see your OpenAIEmbeddings object in convex/vector.ts)
   }),
+  // Uploaded files
+  files: defineTable({
+    title: v.string(),
+    type: fileTypes,
+    description: v.optional(v.string()),
+    fileId: v.optional(v.id("_storage")), // for storing file (todo)
+    downloadUrl: v.optional(v.string()), // for downloading file (todo)
+    webpageUrl: v.optional(v.string()), // link to webpage (for html files only)
+  }).index("byTitle", ["title"]),
 });

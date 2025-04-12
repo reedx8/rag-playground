@@ -6,8 +6,8 @@ import { processFile } from "@/app/actions/fileProcessing";
 // import { Document } from 'langchain/document';
 
 export default function IngestForms() {
-  const performIngestion = useAction(api.myActions.ingest);
-  const performFileUpload = useAction(api.myActions.fileUpload);
+  const performIngestion = useAction(api.vector.ingest);
+  const performFileUpload = useAction(api.vector.fileUpload);
   // const url = "https://tkdodo.eu/blog/refactor-impactfully";
   // const url = "https://lilianweng.github.io/posts/2023-06-23-agent/";
   // const url =
