@@ -1,6 +1,6 @@
 import { query } from "./_generated/server.js";
 
-export const getAllFiles = query({
+export const getAllChunks = query({
   args: {},
   handler: async (ctx) => {
     const uniqueFiles: string[] = [];

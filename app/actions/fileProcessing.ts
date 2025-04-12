@@ -7,17 +7,9 @@ import { join } from "path";
 import { tmpdir } from "os";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-// load file into the Document format that we use downstream to chunk
-export async function processFile(formData: FormData) {
-  const file = formData.get("file") as File | null;
-
-  if (
-    !file ||
-    file.size === 0 ||
-    (!file.type.endsWith("pdf") && !file.type.endsWith("csv"))
-  ) {
-    throw new Error("Please upload a valid PDF or CSV file.");
-  }
+// load file into Chunked Document format
+export async function processFile(formData: FormData, docId: string) {
+  const file = formData.get("file") as File;
 
   try {
     // Save the file temporarily on the Next.js server
@@ -28,7 +20,7 @@ export async function processFile(formData: FormData) {
     const tempFilePath = join(tmpdir(), file.name);
     await writeFile(tempFilePath, buffer);
 
-    // Now you can use PDFLoader/CSVLoader with the file path
+    // Creates a document for each row in csv, or each page in pdf
     let docs;
     if (file.type.endsWith("pdf")) {
       const loader = new PDFLoader(tempFilePath);
@@ -57,7 +49,7 @@ export async function processFile(formData: FormData) {
     // Creates a serializable representation that can safely pass from server to client.
     const serializableSplits = allSplits.map((doc) => ({
       pageContent: doc.pageContent,
-      metadata: doc.metadata,
+      metadata: { ...doc.metadata, documentId: docId },
     }));
 
     return serializableSplits;

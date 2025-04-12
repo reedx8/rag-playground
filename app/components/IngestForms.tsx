@@ -1,17 +1,14 @@
 "use client";
 import { useFormStatus } from "react-dom";
-import { useAction } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { processFile } from "@/app/actions/fileProcessing";
 // import { Document } from 'langchain/document';
 
 export default function IngestForms() {
-  const performIngestion = useAction(api.vector.ingest);
-  const performFileUpload = useAction(api.vector.fileUpload);
-  // const url = "https://tkdodo.eu/blog/refactor-impactfully";
-  // const url = "https://lilianweng.github.io/posts/2023-06-23-agent/";
-  // const url =
-  //   "https://www.espn.com/nba/story/_/id/44480928/no-one-was-same-page-memphis-grizzlies-shocking-firing-taylor-jenkins";
+  const performIngestion = useAction(api.rag.ingest);
+  const performFileUpload = useAction(api.rag.fileUpload);
+  const addDocument = useMutation(api.documents.addDocument);
 
   async function handleURL(formData: FormData) {
     // TODO: check URL valid and not already in vector store
@@ -32,7 +29,31 @@ export default function IngestForms() {
 
   async function handleFileUpload(formData: FormData) {
     try {
-      const serializableSplits = await processFile(formData); // Server Action since Convex Actions cannot take File types
+      const file = formData.get("file") as File;
+
+      if (file.size === 0) {
+        alert("Please upload a file");
+        return;
+      }
+
+      // see body size limit in next.config.ts
+      if (file.size > 3000000) {
+        alert("Files larger than 3MB are not supported");
+        return;
+      }
+
+      let fileType;
+      if (file.type.endsWith("pdf")) {
+        fileType = "pdf";
+      } else if (file.type.endsWith("csv")) {
+        fileType = "csv";
+      } else {
+        alert("Invalid file type");
+        return;
+      }
+
+      const documentId = await addDocument({ title: file.name, docType: fileType as "pdf" | "csv" });
+      const serializableSplits = await processFile(formData, documentId); // Server Action since Convex Actions cannot take File types
 
       // Convex actions cannot take complex objects, so pass serialized docs
       performFileUpload({ docs: serializableSplits });
@@ -66,6 +87,7 @@ export default function IngestForms() {
             type="file"
             name="file"
             className="bg-white text-black p-1 mb-1 rounded-sm hover:cursor-pointer"
+            accept=".pdf,.csv"
           />
           <div className="mt-2">
             <SubmitButton idleText="Submit File" loadingText="Submitting..." />

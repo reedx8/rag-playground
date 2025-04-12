@@ -8,7 +8,7 @@ export const fileTypes = v.union(
 );
 
 export default defineSchema({
-  // Each chunk is a LangChain Document Object in our vector store
+  // Vector store: each chunk is a LangChain Document Object in our vector store
   chunks: defineTable({
     embedding: v.array(v.number()),
     text: v.string(),
@@ -18,11 +18,11 @@ export default defineSchema({
     dimensions: 1536, // this must match with the embedding model used (see your OpenAIEmbeddings object in convex/vector.ts)
   }),
   // Uploaded files
-  files: defineTable({
+  documents: defineTable({
     title: v.string(),
     type: fileTypes,
     description: v.optional(v.string()),
-    fileId: v.optional(v.id("_storage")), // for storing file (todo)
+    storageId: v.optional(v.id("_storage")), // for storing file (todo)
     downloadUrl: v.optional(v.string()), // for downloading file (todo)
     webpageUrl: v.optional(v.string()), // link to webpage (for html files only)
   }).index("byTitle", ["title"]),

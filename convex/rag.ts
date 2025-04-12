@@ -136,39 +136,6 @@ export const fileUpload = action({
   },
 });
 
-// get all unique files in vector store
-export const getAllFiles = action({
-  args: {},
-  handler: async (ctx) => {
-    const vectorStore = new ConvexVectorStore(embeddingModel, {
-      ctx,
-      table: "chunks",
-    });
-
-    // Convex does not yet support search directly on vector store's fields (metadata), hence the following:
-    const docs = await vectorStore.similaritySearch("*", 256);
-
-    // Create a Set of unique source filenames
-    const uniqueSources = new Set();
-    const uniqueDocs = docs.filter((doc) => {
-      const source = doc.metadata.source;
-      if (uniqueSources.has(source)) {
-        return false;
-      }
-      uniqueSources.add(source);
-      return true;
-    });
-
-    // uniqueDocs.forEach((doc) => console.log(doc.metadata.source));
-    const serializedDocs = uniqueDocs.map((doc) => ({
-      // pageContent: doc.pageContent,
-      source: doc.metadata.source,
-    }));
-    return serializedDocs;
-    // return uniqueDocs;
-  },
-});
-
 // async function parseIntoDocs(fileType: string, url?: string, pdfFile?: File) {
 //   if (fileType === "url" && url) {
 //     const pTagSelector = "p";
