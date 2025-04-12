@@ -1,6 +1,6 @@
 # RAG Playground
 
-A Retrieval Augmented Generation (RAG) system that can ingest multiple document formats (URL, PDF, and CSV) into vector store and provide AI-powered responses with OpenAI's ChatGPT, using LangChain and LangSmith libraries.
+A unimodal Retrieval Augmented Generation (RAG) system that can ingest multiple document formats (URL, PDF, CSV) into vector store and provide AI-powered responses with generative AI models.
 
 ## Get started
 
