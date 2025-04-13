@@ -12,16 +12,26 @@ export default function SearchContainer() {
 
   const handleSearch = async (formData: FormData) => {
     const query = String(formData.get("query"));
+    if (query.length === 0) {
+      alert("Please enter a query");
+      return;
+    }
     // await new Promise((resolve) => setTimeout(resolve, 3000));
-    const result = await performSearch({ query });
-    setResponse(result);
+    try {
+      const result = await performSearch({ query });
+      setResponse(result);
+    } catch (error) {
+      alert(
+        `Caught Error: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   };
 
   return (
-    <div className='grid grid-cols-2 gap-2'>
-      <div className='flex flex-col gap-2'>
+    <div className="grid grid-cols-2 gap-2">
+      <div className="flex flex-col gap-2">
         <h1 className="text-2xl text-balance">Search documents with AI</h1>
-        <form action={handleSearch} className='mb-2'>
+        <form action={handleSearch} className="mb-2">
           <input
             type="text"
             name="query"
