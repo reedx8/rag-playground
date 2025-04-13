@@ -20,12 +20,12 @@ export default function SearchContainer() {
   return (
     <div className='grid grid-cols-2 gap-2'>
       <div className='flex flex-col gap-2'>
-        <h1 className="text-2xl text-balance">Search articles with AI</h1>
+        <h1 className="text-2xl text-balance">Search documents with AI</h1>
         <form action={handleSearch} className='mb-2'>
           <input
             type="text"
             name="query"
-            className="bg-white text-black p-1 mr-1 rounded-sm min-w-80"
+            className="bg-white text-black p-1 mr-2 rounded-sm min-w-80"
             // size={40}
           />
           <SubmitButton idleText="Search" loadingText="Searching..." />

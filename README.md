@@ -33,4 +33,4 @@ This app uses OpenAI to generate embeddings and LangSmith to monitor app's state
 2. Vector store -- Convex DB
 3. Embedding model -- OpenAI
 4. RAG library -- LangChain + LangSmith
-5. Others -- TypeScript, Next.js, React
+5. Others -- TypeScript, Next.js, React, Tailwind
