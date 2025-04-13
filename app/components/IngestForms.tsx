@@ -3,6 +3,7 @@ import { useFormStatus } from "react-dom";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { processFile } from "@/app/actions/fileProcessing";
+import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 // import { Document } from 'langchain/document';
 
 export default function IngestForms() {
@@ -18,9 +19,15 @@ export default function IngestForms() {
       alert("Error: Please enter a valid URL.");
       return;
     }
-
+    const cheerioLoader = new CheerioWebBaseLoader(url, {
+      selector: "title"
+    });
+  
     try {
-      await performIngestion({ url });
+      const docs = await cheerioLoader.load();
+      const title = docs[0].pageContent || "Untitled";
+      const documentId = await addDocument({ title: title, docType: "html" });
+      await performIngestion({ docId: documentId, url }); // add to chunks table
       alert("URL processed successfully!");
     } catch (error) {
       alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
@@ -28,35 +35,31 @@ export default function IngestForms() {
   }
 
   async function handleFileUpload(formData: FormData) {
+    const file = formData.get("file") as File;
+
+    // see body size limit in next.config.ts
+    if (file.size === 0 || file.size > 3000000) {
+      alert("Please upload a file (file must be less than 3MB)");
+      return;
+    }
+
+    let fileType;
+    if (file.type.endsWith("pdf")) {
+      fileType = "pdf";
+    } else if (file.type.endsWith("csv")) {
+      fileType = "csv";
+    } else {
+      alert("Invalid file type");
+      return;
+    }
+
     try {
-      const file = formData.get("file") as File;
-
-      if (file.size === 0) {
-        alert("Please upload a file");
-        return;
-      }
-
-      // see body size limit in next.config.ts
-      if (file.size > 3000000) {
-        alert("Files larger than 3MB are not supported");
-        return;
-      }
-
-      let fileType;
-      if (file.type.endsWith("pdf")) {
-        fileType = "pdf";
-      } else if (file.type.endsWith("csv")) {
-        fileType = "csv";
-      } else {
-        alert("Invalid file type");
-        return;
-      }
-
       const documentId = await addDocument({ title: file.name, docType: fileType as "pdf" | "csv" });
-      const serializableSplits = await processFile(formData, documentId); // Server Action since Convex Actions cannot take File types
+      // Server Action since Convex Actions cannot take File types + client components cannot use langchain's PDF/CSVLoaders (ie must be in node environment)
+      const serializableSplits = await processFile(formData, documentId);
 
-      // Convex actions cannot take complex objects, so pass serialized docs
-      performFileUpload({ docs: serializableSplits });
+      // Convex actions cannot take complex objects, so pass serialized chunks/splits
+      await performFileUpload({ docs: serializableSplits });
       alert("File processed successfully!");
     } catch (error) {
       alert(`Error: ${error instanceof Error ? error.message : String(error)}`);

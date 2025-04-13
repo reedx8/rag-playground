@@ -43,20 +43,21 @@ const StateAnnotation = Annotation.Root({
 // Transform source into Document format, chunk, then add to Convex Vector Store
 export const ingest = action({
   args: {
+    docId: v.string(),
     url: v.string(),
   },
   handler: async (ctx, args) => {
-    if (args.url.length === 0 || args.url === undefined) {
-      return;
-    }
     // TODO: include check if url already in vector store
 
     // parse url into chunks of documents:
-    const docs = await loadAndChunk(args.url);
-    console.log(docs);
+    const chunks = await loadAndChunk(args.url);
+    console.log(chunks);
+    chunks.forEach((chunk) => {
+      chunk.metadata.documentId = args.docId;
+    });
 
     // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
-    await ConvexVectorStore.fromDocuments(docs, embeddingModel, {
+    await ConvexVectorStore.fromDocuments(chunks, embeddingModel, {
       ctx,
       table: "chunks",
     });
