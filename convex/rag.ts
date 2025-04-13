@@ -50,17 +50,21 @@ export const ingest = action({
     // TODO: include check if url already in vector store
 
     // parse url into chunks of documents:
-    const chunks = await loadAndChunk(args.url);
-    console.log(chunks);
-    chunks.forEach((chunk) => {
-      chunk.metadata.documentId = args.docId;
-    });
+    try {
+      const chunks = await loadAndChunk(args.url);
+      console.log(chunks);
+      chunks.forEach((chunk) => {
+        chunk.metadata.documentId = args.docId;
+      });
 
-    // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
-    await ConvexVectorStore.fromDocuments(chunks, embeddingModel, {
-      ctx,
-      table: "chunks",
-    });
+      // add documents to Convex vector store (ie index chunks). addDocuments() DNE on ConvexVectorStore:
+      await ConvexVectorStore.fromDocuments(chunks, embeddingModel, {
+        ctx,
+        table: "chunks",
+      });
+    } catch (error) {
+      throw new Error("Caught Error: " + error);
+    }
   },
 });
 
@@ -173,15 +177,18 @@ async function loadAndChunk(url: string) {
     selector: pTagSelector,
   });
 
-  const docs = await cheerioLoader.load();
-  console.assert(docs.length === 1, "Expected 1 document");
-  console.log(`Total characters: ${docs[0].pageContent.length}`);
+  try {
+    const docs = await cheerioLoader.load();
+    console.assert(docs.length === 1, "Expected 1 document");
+    console.log(`Total characters: ${docs[0].pageContent.length}`);
 
-  const splitter = new RecursiveCharacterTextSplitter({
-    chunkSize: 1000,
-    chunkOverlap: 200,
-  });
-  const allSplits = await splitter.splitDocuments(docs);
-
-  return allSplits;
+    const splitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 1000,
+      chunkOverlap: 200,
+    });
+    const allSplits = await splitter.splitDocuments(docs);
+    return allSplits;
+  } catch (error) {
+    throw new Error("Caught Error: " + error);
+  }
 }

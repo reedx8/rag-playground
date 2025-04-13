@@ -24,6 +24,5 @@ export default defineSchema({
     description: v.optional(v.string()),
     storageId: v.optional(v.id("_storage")), // for storing file (todo)
     downloadUrl: v.optional(v.string()), // for downloading file (todo)
-    webpageUrl: v.optional(v.string()), // link to webpage (for html files only)
   }).index("byTitle", ["title"]),
 });

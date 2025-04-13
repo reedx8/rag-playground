@@ -2,8 +2,8 @@
 import { useFormStatus } from "react-dom";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { processFile } from "@/app/actions/fileProcessing";
-import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
+import { processFile, getTitle } from "@/app/actions/fileProcessing";
+// import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 // import { Document } from 'langchain/document';
 
 export default function IngestForms() {
@@ -19,18 +19,14 @@ export default function IngestForms() {
       alert("Error: Please enter a valid URL.");
       return;
     }
-    const cheerioLoader = new CheerioWebBaseLoader(url, {
-      selector: "title"
-    });
   
     try {
-      const docs = await cheerioLoader.load();
-      const title = docs[0].pageContent || "Untitled";
-      const documentId = await addDocument({ title: title, docType: "html" });
+      const title = await getTitle(url); // Server avoids CORS issues
+      const documentId = await addDocument({ title, docType: "html" });
       await performIngestion({ docId: documentId, url }); // add to chunks table
       alert("URL processed successfully!");
     } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      alert(`Caught Error: ${error instanceof Error ? error.message : String(error)} (CORS?)`);
     }
   }
 
@@ -62,7 +58,7 @@ export default function IngestForms() {
       await performFileUpload({ docs: serializableSplits });
       alert("File processed successfully!");
     } catch (error) {
-      alert(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      alert(`Caught Error: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 

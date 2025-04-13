@@ -6,8 +6,9 @@ import { writeFile } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
+import { CheerioWebBaseLoader } from "@langchain/community/document_loaders/web/cheerio";
 
-// load file into Chunked Document format
+// load pdf/csv file into Chunked Document format
 export async function processFile(formData: FormData, docId: string) {
   const file = formData.get("file") as File;
 
@@ -58,5 +59,20 @@ export async function processFile(formData: FormData, docId: string) {
   } catch (error) {
     console.error("Error processing file:", error);
     throw new Error("Failed to process the file");
+  }
+}
+
+// get webpage's title for html files
+export async function getTitle(url: string) {
+  const cheerioLoader = new CheerioWebBaseLoader(url, {
+    selector: "title",
+  });
+
+  try {
+    const docs = await cheerioLoader.load();
+    const title = docs[0].pageContent || "Untitled";
+    return title;
+  } catch (error) {
+    throw new Error("Caught Error: " + error);
   }
 }
