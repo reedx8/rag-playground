@@ -9,6 +9,7 @@ git clone https://github.com/reedx8/rag-playground.git
 cd rag-playground
 npm install
 npm run dev
+`choose an existing project` -> rag playground
 ```
 
 This app uses OpenAI to generate embeddings and LangSmith to monitor app's state. Add `OPENAI_API_KEY` and `LANGSMITH_API_KEY` Convex environment variables on your Convex dashboard.
